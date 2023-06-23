@@ -3,6 +3,14 @@ This is a minimal implementation of the "3M Staff Workstation" software for Linu
 
 You can adapt this script to automatically switch operating modes of the device based on your needs and workflows.
 
+## Hardware Setup
+Allow non-root users communication with this device. Replace the vendor/device id for your device model.
+
+```
+#/etc/udev/rules.d/50-bookcheck.rules:
+ATTR{idProduct}=="03ae", ATTR{idVendor}=="0d2c", MODE="0666"
+```
+
 ## Usage
 ```
 ### read device status ###
