@@ -1,1 +1,3 @@
 pyusb
+serial
+pyautogui # needs python3-tk python3-dev
