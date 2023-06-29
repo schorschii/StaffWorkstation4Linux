@@ -1,17 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
+import configparser
 import usb.core
 import usb.util
 import sys
 
+
+# read config
+config = {}
+configParser = configparser.ConfigParser()
+configParser.read(str(Path.home())+'/.config/staffworkstation4linux.ini')
+if(configParser.has_section('bookcheck')): config = dict(configParser.items('bookcheck'))
+
 # find device and init connection
-dev = usb.core.find(idVendor=0x0d2c, idProduct=0x03ae)
+idVendor = int.from_bytes(bytes.fromhex(config.get('idvendor', '0d2c')), byteorder='big')
+idProduct = int.from_bytes(bytes.fromhex(config.get('idproduct', '03ae')), byteorder='big')
+dev = usb.core.find(
+    idVendor = idVendor,
+    idProduct = idProduct
+)
 if dev is None:
-    raise ValueError('3M Bookcheck USB device not found')
+    raise ValueError(f'3M Bookcheck USB device (ven={hex(idVendor)}, dev={hex(idProduct)}) not found')
 dev.set_configuration()
 #print(dev.get_active_configuration())
-
 
 # retrieve status
 def getStatusText(bInOut, bMediaMode):
