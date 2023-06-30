@@ -22,7 +22,7 @@ reboot
 ## Software Setup
 Install the necessary python packages (requirements.txt).
 ```
-apt install python3-usb python3-serial python3-tk python3-dev python3-pip
+apt install wmctrl python3-usb python3-serial python3-tk python3-dev python3-pip
 sudo pip3 install pyautogui
 ```
 

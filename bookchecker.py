@@ -76,6 +76,7 @@ if changed:
 if auto:
     keywordCheckout = config.get('keywordcheckout', 'Ausleihe')
     keywordCheckin  = config.get('keywordcheckin', 'Rückgabe')
+
     while True:
         for line in os.popen('wmctrl -l').read().splitlines():
             if keywordCheckout.upper() in line.upper():
@@ -88,4 +89,5 @@ if auto:
                 print(f'Found window title {keywordCheckin}, switch to check-in')
                 bInOut = 0x01
                 sendStatusUpdate(bInOut, bMediaMode)
+
         time.sleep(1)
