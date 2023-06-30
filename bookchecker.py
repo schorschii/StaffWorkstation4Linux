@@ -29,22 +29,30 @@ dev.set_configuration()
 #print(dev.get_active_configuration())
 
 # retrieve status
-def getStatusText(bInOut, bMediaMode):
-    return ('check-in' if bInOut else 'check-out') +', '+ ('normal-mode' if bMediaMode else 'magnetic-media-mode')
+def getStatusText1(status1):
+    return (
+        ('check-in' if status1[0] else 'check-out') +', '+
+        ('normal-mode' if status1[1] else 'magnetic-media-mode')
+    )
+def getStatusText2(status2):
+    return (
+        ('sensor-triggered' if status2[2] else 'sensor-not-triggered') +', '+
+        ('left' if status2[6]==1 else 'right' if status2[6]==2 else 'unknown-direction')
+    )
 
 status1    = dev.ctrl_transfer(0xC0, 0xbd, 0xffff, 0xffff, 9)
 bInOut     = status1[0]
 bMediaMode = status1[1]
-print('status 1:', bytes(status1).hex(), '('+getStatusText(bInOut, bMediaMode)+')')
+print('status 1:', bytes(status1).hex(), '('+getStatusText1(status1)+')')
 
 status2 = dev.ctrl_transfer(0xC0, 0xb7, 0x0000, 0x0000, 9)
-print('status 2:', bytes(status2).hex())
+print('status 2:', bytes(status2).hex(), '('+getStatusText2(status2)+')')
 
 # set status
 def sendStatusUpdate(bInOut, bMediaMode):
     status = (bMediaMode << 8) | bInOut
-    ret = dev.ctrl_transfer(0xC0, 0xbd, status, 0x01ff, 9)
-    print('set resp:', bytes(ret).hex(), '('+getStatusText(bInOut, bMediaMode)+')')
+    statusResponse = dev.ctrl_transfer(0xC0, 0xbd, status, 0x01ff, 9)
+    print('set resp:', bytes(statusResponse).hex(), '('+getStatusText1(statusResponse)+')')
 
 changed = False
 auto    = False
