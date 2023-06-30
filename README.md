@@ -32,6 +32,8 @@ On startup, both scripts will try to read the config file `~/.config/staffworkst
 [bookcheck]
 idvendor = 0d2c
 idproduct = 03ae
+keywordcheckout = Ausleihe
+keywordcheckin = Rückgabe
 
 [scanner]
 port = /dev/ttyS0
@@ -46,13 +48,20 @@ requiredgoodreads = 3
 status 1: 00010001 (check-out, normal-mode)
 status 2: 0d000000010001fe00
 
-### Bookcheck: set device mode ###
+### Bookcheck: set device mode manually ###
 # i = check-in (incoming), o = check-out (outgoing)
 # x = normal processing mode, y = magnetic media mode
 ./bookchecker.py i y
 status 1: 00010001 (check-out, normal-mode)
 status 2: 0d000000010001fe00
 set resp: 01000001 (check-in, magnetic-media-mode)
+
+### Bookcheck: set device mode automatically based on open windows ###
+./bookchecker.py a
+status 1: 01010001 (check-in, normal-mode)
+status 2: 0d000001010001ee00
+Found window title Ausleihe, switch to check-out
+set resp: 00010001 (check-out, normal-mode)
 
 ### Scanner: start listening for scanned barcodes ###
 ./bookscanner.py
