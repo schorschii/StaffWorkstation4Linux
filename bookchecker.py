@@ -35,9 +35,11 @@ def getStatusText1(status1):
         ('normal-mode' if status1[1] else 'magnetic-media-mode')
     )
 def getStatusText2(status2):
+    verifierIndicator = status2[7] & 0b00001000
     return (
         ('sensor-triggered' if status2[2] else 'sensor-not-triggered') +', '+
-        ('left' if status2[6]==1 else 'right' if status2[6]==2 else 'unknown-direction')
+        ('left' if status2[6]==1 else 'right' if status2[6]==2 else 'unknown-direction') +', '+
+        ('verifier-off' if verifierIndicator else 'verifier-on')
     )
 
 status1    = dev.ctrl_transfer(0xC0, 0xbd, 0xffff, 0xffff, 9)
