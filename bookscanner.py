@@ -21,6 +21,12 @@ ser = serial.Serial(
 )
 print('Connected to:', ser.name)
 
+# initialize scanner commands
+initcmd = config.get('init', None)
+if(initcmd):
+    print('Send init command:', initcmd)
+    ser.write(initcmd.encode('ascii'))
+
 # read barcodes from scanner and send to OS
 requiredGoodReads = int(config.get('requiredgoodreads', 3))
 currentGoodReads = 0

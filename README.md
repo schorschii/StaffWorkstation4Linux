@@ -39,7 +39,10 @@ keywordcheckin = Rückgabe
 port = /dev/ttyS0
 rate = 9600
 requiredgoodreads = 3
+init = <Kr1,0,0,8,10><A>
 ```
+
+The caracters given in `init` will be sent over the serial port to the scanner in order to initialize it with your desired settings. In this example, it enables barcode type "Interleaved 2 of 5". Please have a look at the scanner manual (linked above) for all command codes.
 
 ## Usage
 ```
