@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from pathlib import Path
+from threading import Timer
 import configparser
 import serial
 import time
@@ -28,24 +29,36 @@ if(initcmd):
     ser.write(initcmd.encode('ascii'))
 
 # read barcodes from scanner and send to OS
-requiredGoodReads = int(config.get('requiredgoodreads', 3))
-currentGoodReads = 0
-currentBarcode = ''
-while True:
-    barcode = ser.readline().decode('ascii').strip()
-    if(barcode == currentBarcode):
-        currentGoodReads += 1
-    else:
-        currentGoodReads = 0
-    currentBarcode = barcode
+sleeptime = float(config.get('sleep', 1.5))
+t = None
+currentbarcode = ''
 
-    if(currentGoodReads == requiredGoodReads):
-        print('Barcode:', barcode)
-        try:
-            import pyautogui
-            pyautogui.typewrite(barcode)
-            pyautogui.press('enter')
-        except Exception as e:
-            print('Unable to send keystrokes to desktop:', type(e), e)
+def wakeup():
+    #print('wakeup!')
+    t = None
+    ser.write('<H>'.encode('ascii'))
+
+while True:
+    currentbarcode += ser.read().decode('ascii')
+    if(ser.in_waiting > 0 or not currentbarcode.endswith('\n')):
+        continue # read entire buffer, can contain multiple lines
+
+    barcode = currentbarcode.split('\n')[0].strip()
+    currentbarcode = ''
+
+    if(sleeptime):
+        #print('sleeping', sleeptime)
+        ser.write('<I>'.encode('ascii'))
+        if(not t or not t.is_alive()):
+            t = Timer(sleeptime, wakeup)
+            t.start()
+
+    print('Barcode:', barcode)
+    try:
+        import pyautogui
+        pyautogui.typewrite(barcode)
+        pyautogui.press('enter')
+    except Exception as e:
+        print('Unable to send keystrokes to desktop:', type(e), e)
 
     time.sleep(0.01)
