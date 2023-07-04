@@ -38,33 +38,37 @@ keywordcheckin = Rückgabe
 [scanner]
 port = /dev/ttyS0
 rate = 9600
-requiredgoodreads = 3
 init = <Kr1,0,0,8,10><A>
+sleep = 1.5
 ```
 
 The caracters given in `init` will be sent over the serial port to the scanner in order to initialize it with your desired settings. In this example, it enables barcode type "Interleaved 2 of 5". Please have a look at the scanner manual (linked above) for all command codes.
+
+`sleep` is the delay the scanner gets deactivated after a successful read.
 
 ## Usage
 ```
 ### Bookcheck: read device status ###
 ./bookchecker.py
-status 1: 00010001 (check-out, normal-mode)
-status 2: 0d000000010001fe00
+status 1: 01010000 (check-in, normal-mode, verifier-off, auto)
+status 2: 00000001010001ee00 (sensor-not-triggered, left, verifier-off)
 
 ### Bookcheck: set device mode manually ###
 # i = check-in (incoming), o = check-out (outgoing)
 # x = normal processing mode, y = magnetic media mode
-./bookchecker.py i y
-status 1: 00010001 (check-out, normal-mode)
-status 2: 0d000000010001fe00
-set resp: 01000001 (check-in, magnetic-media-mode)
+# a = automatic mode, m = manual mode
+# l = verifier light on, k = verifier light off
+./bookchecker.py o y
+status 1: 01010000 (check-in, normal-mode, verifier-off, auto)
+status 2: 00000001010001ee00 (sensor-not-triggered, left, verifier-off)
+set resp: 00000000 (check-out, magnetic-media-mode, verifier-off, auto)
 
-### Bookcheck: set device mode automatically based on open windows ###
-./bookchecker.py a
-status 1: 01010001 (check-in, normal-mode)
-status 2: 0d000001010001ee00
-Found window title Ausleihe, switch to check-out
-set resp: 00010001 (check-out, normal-mode)
+### Bookcheck: set device mode automatically based on titles of open windows ###
+./bookchecker.py background
+status 1: 00000000 (check-out, magnetic-media-mode, verifier-off, auto)
+status 2: 00000000000001de00 (sensor-not-triggered, left, verifier-off)
+Found window title Rückgabe, switch to check-in
+set resp: 01000000 (check-in, magnetic-media-mode, verifier-off, auto)
 
 ### Scanner: start listening for scanned barcodes ###
 ./bookscanner.py
