@@ -7,7 +7,7 @@ You can adapt this script to automatically switch operating modes of the device 
 Allow non-root users communication with the USB device. Replace the vendor/device id for your device model.
 
 ```
-#/etc/udev/rules.d/50-bookcheck.rules:
+#/etc/udev/rules.d/99-bookcheck.rules:
 ATTR{idVendor}=="0d2c", ATTR{idProduct}=="03ae", MODE="0666"
 ```
 
