@@ -31,7 +31,6 @@ if(initcmd):
 # read barcodes from scanner and send to OS
 sleeptime = float(config.get('sleep', 1.5))
 t = None
-currentbarcode = ''
 
 def wakeup():
     #print('wakeup!')
@@ -39,12 +38,7 @@ def wakeup():
     ser.write('<H>'.encode('ascii'))
 
 while True:
-    currentbarcode += ser.read().decode('ascii')
-    if(ser.in_waiting > 0 or not currentbarcode.endswith('\n')):
-        continue # read entire buffer, can contain multiple lines
-
-    barcode = currentbarcode.split('\n')[0].strip()
-    currentbarcode = ''
+    barcode = ser.readline().decode('ascii').strip()
 
     if(sleeptime):
         #print('sleeping', sleeptime)

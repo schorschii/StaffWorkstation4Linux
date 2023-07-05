@@ -38,11 +38,15 @@ keywordcheckin = Rückgabe
 [scanner]
 port = /dev/ttyS0
 rate = 9600
-init = <Kr1,0,0,8,10><A>
+init = <Kr1,0,0,8,10><Kg1><H><A>
 sleep = 1.5
 ```
 
-The caracters given in `init` will be sent over the serial port to the scanner in order to initialize it with your desired settings. In this example, it enables barcode type "Interleaved 2 of 5". Please have a look at the scanner manual (linked above) for all command codes.
+The caracters given in `init` will be sent over the serial port to the scanner in order to initialize it with your desired settings. Please have a look at the scanner manual (linked above) for all command codes. In this example:
+- `<Kr1,0,0,8,10>` enables barcode type "Interleaved 2 of 5"
+- `<Kg1>` sets read mode "Continuous Read 1 Output"
+- `<H>` ensures that the laser is on
+- `<A>` applies the settings
 
 `sleep` is the delay the scanner gets deactivated after a successful read.
 
