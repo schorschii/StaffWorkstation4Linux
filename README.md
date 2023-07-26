@@ -38,17 +38,31 @@ keywordcheckin = Rückgabe
 [scanner]
 port = /dev/ttyS0
 rate = 9600
-init = <Kr1,0,0,8,10><Kg1><H><A>
 sleep = 1.5
+initcmd = <Kr1,0,0,8,10><Kg1><H><A>
+sleepcmd = <I>
+wakeupcmd = <H>
 ```
 
-The caracters given in `init` will be sent over the serial port to the scanner in order to initialize it with your desired settings. Please have a look at the scanner manual (linked above) for all command codes. In this example:
+The caracters given in `initcmd` will be sent over the serial port to the scanner in order to initialize it with your desired settings. Please have a look at the scanner manual (linked above) for all command codes. In this example:
 - `<Kr1,0,0,8,10>` enables barcode type "Interleaved 2 of 5"
 - `<Kg1>` sets read mode "Continuous Read 1 Output"
 - `<H>` ensures that the laser is on
 - `<A>` applies the settings
 
-`sleep` is the delay the scanner gets deactivated after a successful read.
+`sleepcmd` will be sent after a successful read. `sleep` is the delay (the scanner gets deactivated) before the `wakeupcmd` will be sent.
+
+### Connected Mode
+It can be desired to combine both devices/scripts, which means that the scanner gets only activated when the bookcheck sensor is triggered. For this, please set:
+```
+[bookcheck]
+sensortriggeredcmd = <H>
+sensoruntriggeredcmd = <I>
+
+[scanner]
+sleepcmd = <I>
+wakeupcmd =
+```
 
 ## Usage
 ```
