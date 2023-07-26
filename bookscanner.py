@@ -23,26 +23,28 @@ ser = serial.Serial(
 print('Connected to:', ser.name)
 
 # initialize scanner commands
-initcmd = config.get('init', None)
+initcmd = config.get('initcmd', '<Kr1,0,0,8,10><Kg1><H><A>')
 if(initcmd):
     print('Send init command:', initcmd)
     ser.write(initcmd.encode('ascii'))
 
 # read barcodes from scanner and send to OS
+sleepcmd = config.get('sleepcmd', '<I>')
+wakeupcmd = config.get('wakeupcmd', '<H>')
 sleeptime = float(config.get('sleep', 1.5))
 t = None
 
 def wakeup():
     #print('wakeup!')
     t = None
-    ser.write('<H>'.encode('ascii'))
+    ser.write(wakeupcmd.encode('ascii'))
 
 while True:
     barcode = ser.readline().decode('ascii').strip()
 
     if(sleeptime):
         #print('sleeping', sleeptime)
-        ser.write('<I>'.encode('ascii'))
+        ser.write(sleepcmd.encode('ascii'))
         if(not t or not t.is_alive()):
             t = Timer(sleeptime, wakeup)
             t.start()

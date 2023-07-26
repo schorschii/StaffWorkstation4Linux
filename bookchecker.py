@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from pathlib import Path
+from threading import Timer
 import configparser
 import usb.core
 import usb.util
+import serial
 import time
 import sys
 import os
@@ -12,8 +14,9 @@ import os
 
 # read config
 config = {}
+configFile = str(Path.home())+'/.config/staffworkstation4linux.ini'
 configParser = configparser.ConfigParser()
-configParser.read(str(Path.home())+'/.config/staffworkstation4linux.ini')
+configParser.read(configFile)
 if(configParser.has_section('bookcheck')): config = dict(configParser.items('bookcheck'))
 
 # find device and init connection
@@ -104,11 +107,40 @@ for arg in sys.argv:
 if changed:
     sendStatusUpdate(bInOut, bMediaMode, bAutoMode, bVerifierLight)
 
-# setup window title listener for automatic mode change based on open windows
+# init auto mode
+lastSensorState = False
+def scannerWakeup():
+    global lastSensorState
+    status2 = dev.ctrl_transfer(0xC0, 0xb7, 0x0000, 0x0000, 9)
+    if status2[2] and not lastSensorState:
+        lastSensorState = True
+        ser.write(sensorTriggeredCmd.encode('ascii'))
+    elif not status2[2]:
+        lastSensorState = False
+        ser.write(sensorUntriggeredCmd.encode('ascii'))
+    t = Timer(0.05, scannerWakeup)
+    t.start()
+
 if auto:
+    # setup connected scanner mode (activate scanner when bookcheck sensor triggered)
+    sensorTriggeredCmd = config.get('sensortriggeredcmd', None)
+    sensorUntriggeredCmd = config.get('sensoruntriggeredcmd', None)
+    if sensorTriggeredCmd or sensorUntriggeredCmd:
+        scannerConfig = {}
+        scannerConfigParser = configparser.ConfigParser()
+        scannerConfigParser.read(configFile)
+        if(scannerConfigParser.has_section('scanner')): scannerConfig = dict(scannerConfigParser.items('scanner'))
+        ser = serial.Serial(
+            scannerConfig.get('port', '/dev/ttyS0'),
+            int(scannerConfig.get('rate', 9600)),
+        )
+        print('Connected to scanner:', ser.name)
+        t = Timer(1, scannerWakeup)
+        t.start()
+
+    # setup window title listener for automatic mode change based on open windows
     keywordCheckout = config.get('keywordcheckout', 'Ausleihe')
     keywordCheckin  = config.get('keywordcheckin', 'Rückgabe')
-
     while True:
         for line in os.popen('wmctrl -l').read().splitlines():
             if keywordCheckout.upper() in line.upper():
