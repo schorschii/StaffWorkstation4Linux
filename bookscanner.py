@@ -7,7 +7,28 @@ import configparser
 import serial
 import time
 import os
+import re
+import codecs
 
+
+ESCAPE_SEQUENCE_RE = re.compile(r'''
+    ( \\U........      # 8-digit hex escapes
+    | \\u....          # 4-digit hex escapes
+    | \\x..            # 2-digit hex escapes
+    | \\[0-7]{1,3}     # Octal escapes
+    | \\N\{[^}]+\}     # Unicode characters by name
+    | \\[\\'"abfnrtv]  # Single-character escapes
+    )''', re.UNICODE | re.VERBOSE)
+
+def decode_escapes(s):
+    def decode_match(match):
+        try:
+            return codecs.decode(match.group(0), 'unicode-escape')
+        except UnicodeDecodeError:
+            # In case we matched the wrong thing after a double-backslash
+            return match.group(0)
+
+    return ESCAPE_SEQUENCE_RE.sub(decode_match, s)
 
 # read config
 config = {}
@@ -23,7 +44,8 @@ ser = serial.Serial(
 print('Connected to:', ser.name)
 
 # initialize scanner commands
-initcmd = config.get('initcmd', '<Kr1,0,0,8,10><Kg1><H><A>')
+initcmd = config.get('initcmd', '<Kr1,0,0,8,10><Kg1><Ke1,\\r\\n><H><A>')
+initcmd = decode_escapes(initcmd)
 if(initcmd):
     print('Send init command:', initcmd)
     ser.write(initcmd.encode('ascii'))
