@@ -39,10 +39,12 @@ keywordcheckin = Rückgabe
 port = /dev/ttyS0
 rate = 9600
 sleep = 1.5
-initcmd = <Kr1,0,0,8,10><Kg1><H><A>
+initcmd = <Kr1,0,0,8,10><Kg1><Ke1,\r\n><H><A>
 sleepcmd = <I>
 wakeupcmd = <H>
 ```
+
+Important: be aware that escape sequences in initcmd are interpreted. This is necessary e.g. for defining the postamble char to \r\n (Windows-like line break).
 
 The caracters given in `initcmd` will be sent over the serial port to the scanner in order to initialize it with your desired settings. Please have a look at the scanner manual (linked above) for all command codes. In this example:
 - `<Kr1,0,0,8,10>` enables barcode type "Interleaved 2 of 5"
