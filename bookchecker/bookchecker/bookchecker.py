@@ -57,13 +57,13 @@ def getStatusText2(status2):
         ('left' if status2[6]==1 else 'right' if status2[6]==2 else 'unknown-direction') +', '+
         ('verifier-off' if verifierIndicator else 'verifier-on')
     )
-def getStatus(dev, verbose=True):
+def getStatus(dev, trayIcon=None, verbose=True):
     status1 = dev.ctrl_transfer(0xC0, 0xbd, 0xffff, 0xffff, 9)
     bInOut         = status1[0]
     bMediaMode     = status1[1]
     bVerifierLight = status1[2]
     bAutoMode      = status1[3]
-    if verbose: print('status 1:', bytes(status1).hex(), '('+getStatusText1(status1)+')')
+    if verbose: print('status 1:', bytes(status1).hex(), '('+getStatusText1(status1, trayIcon)+')')
 
     status2 = dev.ctrl_transfer(0xC0, 0xb7, 0x0000, 0x0000, 9)
     if verbose: print('status 2:', bytes(status2).hex(), '('+getStatusText2(status2)+')')
@@ -176,6 +176,7 @@ def main():
         w = QtWidgets.QWidget()
         trayIcon = SystemTrayIcon(QtGui.QIcon(), w)
         trayIcon.show()
+        bInOut, bMediaMode, bAutoMode, bVerifierLight = getStatus(dev, trayIcon)
 
         # setup connected scanner mode (activate scanner when bookcheck sensor triggered)
         sensorTriggeredCmd = config.get('sensortriggeredcmd', None)
