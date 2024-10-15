@@ -1,4 +1,2 @@
-pyusb
-serial
+pyserial
 pyautogui # needs python3-tk python3-dev
-PyQt5

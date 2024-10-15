@@ -20,10 +20,18 @@ reboot
 ```
 
 ## Software Setup
-Install the necessary python packages (requirements.txt).
+Installation in a Python venv:
 ```
+# install available python modules globally to avoid duplicate install in venv
 apt install wmctrl python3-usb python3-serial python3-tk python3-dev python3-pip
-sudo pip3 install pyautogui
+
+# install in venv
+python3 -m venv venv --system-site-packages
+venv/bin/pip3 install ./bookchecker ./bookscanner
+
+# start scripts
+venv/bin/bookchecker
+venv/bin/bookscanner
 ```
 
 ## Configuration
