@@ -34,6 +34,8 @@ venv/bin/bookchecker
 venv/bin/bookscanner
 ```
 
+Put the wrapper shell scripts in your autostart to automatically restart the software in case of failure (e.g. USB disconnect).
+
 ## Configuration
 On startup, both scripts will try to read the config file `~/.config/staffworkstation4linux.ini`, which can contain the following settings. If it does not exist, the following defaults will be used.
 ```

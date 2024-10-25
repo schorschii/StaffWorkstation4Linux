@@ -1,0 +1,10 @@
+#!/bin/sh
+
+DIR=/usr/share/staffworkstation4linux
+
+while true; do
+
+    $DIR/venv/bin/bookchecker $@
+    sleep 1
+
+done
