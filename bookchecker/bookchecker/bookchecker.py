@@ -4,7 +4,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from pathlib import Path
-from threading import Timer
+from .PropagatingThread import PropagatingThread
 import configparser
 import usb.core
 import usb.util
@@ -82,6 +82,7 @@ def sendStatusUpdate(dev, bInOut, bMediaMode, bAutoMode=0xff, bVerifierLight=0xf
 
 # connected mode
 def scannerWakeup(dev, ser, sensorTriggeredCmd, sensorUntriggeredCmd):
+    time.sleep(1)
     lastSensorState = True
     while True:
         status2 = dev.ctrl_transfer(0xC0, 0xb7, 0x0000, 0x0000, 9)
@@ -95,6 +96,7 @@ def scannerWakeup(dev, ser, sensorTriggeredCmd, sensorUntriggeredCmd):
 
 # auto mode
 def autoModeChanger(dev, keywordCheckout, keywordCheckin, trayIcon=None):
+    time.sleep(1)
     while True:
         bInOut, bMediaMode, bAutoMode, bVerifierLight = getStatus(dev, verbose=False)
         for line in os.popen('wmctrl -l').read().splitlines():
@@ -192,16 +194,18 @@ def main():
                 int(scannerConfig.get('rate', 9600)),
             )
             print('Connected to scanner:', ser.name)
-            t = Timer(1, scannerWakeup, [dev, ser, sensorTriggeredCmd, sensorUntriggeredCmd])
+            t = PropagatingThread(target=scannerWakeup, args=(dev, ser, sensorTriggeredCmd, sensorUntriggeredCmd,))
             t.daemon = True
             t.start()
+            t.join()
 
         # setup window title listener for automatic mode change based on open windows
         keywordCheckout = config.get('keywordcheckout', 'Ausleihe')
         keywordCheckin  = config.get('keywordcheckin', 'Rückgabe')
-        t2 = Timer(1, autoModeChanger, [dev, keywordCheckout, keywordCheckin, trayIcon])
+        t2 = PropagatingThread(target=autoModeChanger, args=(dev, keywordCheckout, keywordCheckin, trayIcon,))
         t2.daemon = True
         t2.start()
+        t2.join()
 
         # start QT app (tray icon)
         sys.exit(app.exec_())
