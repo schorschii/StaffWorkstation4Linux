@@ -4,7 +4,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from pathlib import Path
-from .PropagatingThread import PropagatingThread
+import threading
 import configparser
 import usb.core
 import usb.util
@@ -84,31 +84,41 @@ def sendStatusUpdate(dev, bInOut, bMediaMode, bAutoMode=0xff, bVerifierLight=0xf
 def scannerWakeup(dev, ser, sensorTriggeredCmd, sensorUntriggeredCmd):
     time.sleep(1)
     lastSensorState = True
-    while True:
-        status2 = dev.ctrl_transfer(0xC0, 0xb7, 0x0000, 0x0000, 9)
-        if status2[2] and not lastSensorState:
-            lastSensorState = True
-            ser.write(sensorTriggeredCmd.encode('ascii'))
-        elif not status2[2] and lastSensorState:
-            lastSensorState = False
-            ser.write(sensorUntriggeredCmd.encode('ascii'))
-        time.sleep(0.05)
+    try:
+        while True:
+            status2 = dev.ctrl_transfer(0xC0, 0xb7, 0x0000, 0x0000, 9)
+            if status2[2] and not lastSensorState:
+                lastSensorState = True
+                ser.write(sensorTriggeredCmd.encode('ascii'))
+            elif not status2[2] and lastSensorState:
+                lastSensorState = False
+                ser.write(sensorUntriggeredCmd.encode('ascii'))
+            time.sleep(0.05)
+    except Exception as e:
+        # exit script on error e.g. if device disconnected - should be restarted by shell wrapper script
+        print('Exception in scannerWakeup:', e)
+        os._exit(1)
 
 # auto mode
 def autoModeChanger(dev, keywordCheckout, keywordCheckin, trayIcon=None):
     time.sleep(1)
-    while True:
-        bInOut, bMediaMode, bAutoMode, bVerifierLight = getStatus(dev, verbose=False)
-        for line in os.popen('wmctrl -l').read().splitlines():
-            if keywordCheckout.upper() in line.upper():
-                if bInOut == 0x00: break
-                print(f'--> found window title {keywordCheckout}, switch to check-out')
-                sendStatusUpdate(dev, 0x00, bMediaMode, bAutoMode, bVerifierLight, trayIcon)
-            elif keywordCheckin.upper() in line.upper():
-                if bInOut == 0x01: break
-                print(f'--> found window title {keywordCheckin}, switch to check-in')
-                sendStatusUpdate(dev, 0x01, bMediaMode, bAutoMode, bVerifierLight, trayIcon)
-        time.sleep(1)
+    try:
+        while True:
+            bInOut, bMediaMode, bAutoMode, bVerifierLight = getStatus(dev, verbose=False)
+            for line in os.popen('wmctrl -l').read().splitlines():
+                if keywordCheckout.upper() in line.upper():
+                    if bInOut == 0x00: break
+                    print(f'--> found window title {keywordCheckout}, switch to check-out')
+                    sendStatusUpdate(dev, 0x00, bMediaMode, bAutoMode, bVerifierLight, trayIcon)
+                elif keywordCheckin.upper() in line.upper():
+                    if bInOut == 0x01: break
+                    print(f'--> found window title {keywordCheckin}, switch to check-in')
+                    sendStatusUpdate(dev, 0x01, bMediaMode, bAutoMode, bVerifierLight, trayIcon)
+            time.sleep(1)
+    except Exception as e:
+        # exit script on error e.g. if device disconnected - should be restarted by shell wrapper script
+        print('Exception in autoModeChanger:', e)
+        os._exit(1)
 
 def main():
     # read config
@@ -194,18 +204,16 @@ def main():
                 int(scannerConfig.get('rate', 9600)),
             )
             print('Connected to scanner:', ser.name)
-            t = PropagatingThread(target=scannerWakeup, args=(dev, ser, sensorTriggeredCmd, sensorUntriggeredCmd,))
-            t.daemon = True
+            t = threading.Thread(target=scannerWakeup, args=(dev, ser, sensorTriggeredCmd, sensorUntriggeredCmd,))
+            t.daemon = True # exit when main thread exits
             t.start()
-            t.join()
 
         # setup window title listener for automatic mode change based on open windows
         keywordCheckout = config.get('keywordcheckout', 'Ausleihe')
         keywordCheckin  = config.get('keywordcheckin', 'Rückgabe')
-        t2 = PropagatingThread(target=autoModeChanger, args=(dev, keywordCheckout, keywordCheckin, trayIcon,))
-        t2.daemon = True
+        t2 = threading.Thread(target=autoModeChanger, args=(dev, keywordCheckout, keywordCheckin, trayIcon,))
+        t2.daemon = True # exit when main thread exits
         t2.start()
-        t2.join()
 
         # start QT app (tray icon)
         sys.exit(app.exec_())
