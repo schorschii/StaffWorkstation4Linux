@@ -19,6 +19,12 @@ usermod -aG dialout <linuxuser>
 reboot
 ```
 
+You may initialize/reset the scanner first by sending this commands to it:
+```
+cat "Microscan MS-820 Factory Reset.cmd" > /dev/ttyS0
+```
+Disconnect the power from the scanner and connect it again.
+
 ## Software Setup
 Installation in a Python venv:
 ```
@@ -49,7 +55,7 @@ keywordcheckin = Rückgabe
 port = /dev/ttyS0
 rate = 9600
 sleep = 1.5
-initcmd = <Kr1,0,0,8,10><Kg1><Ke1,\r\n><H><A>
+initcmd = <KC0,1,60,80><Kr1,0,0,8,10><Kg1><Ke1,\r\n><H><A>
 sleepcmd = <I>
 wakeupcmd = <H>
 ```
