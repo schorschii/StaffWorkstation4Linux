@@ -1,5 +1,5 @@
 # StaffWorkstation4Linux
-This is a minimal implementation of the "3M Staff Workstation" software for Linux, which controls the 3M Bookcheck Unit Model 940 Series (especially tested with Model 942) via USB and the related barcode scanner (a [Microscan MS-820](https://files.microscan.com/downloadcenter/ms820manual.pdf)) via serial RS232.
+This is a minimal implementation of the "3M Staff Workstation" software for Linux, which controls the 3M Bookcheck Unit Model 940 Series (especially tested with Model 942) via USB and the related barcode scanner (a [Microscan MS-820](https://cybarcode.com/sites/cy/files/manuals/microscan/ms-820_user_manual.pdf)) via serial RS232.
 
 You can adapt this script to automatically switch operating modes of the device based on your needs and workflows.
 
@@ -111,4 +111,4 @@ set resp: 01000000 (check-in, magnetic-media-mode, verifier-off, auto)
 ```
 
 ## BTW
-In a [flyer](https://multimedia.3m.com/mws/media/602271O/940-series-bookcheck.pdf) of this device, the serial barcode scanner is called "a state-of-the-art barcode scanner", hehe.
+In the [flyer](https://pnss.com.my/940_Series.pdf) and [manual](https://docs.fsw.edu/docnew/action.php?kt_path_info=ktcore.actions.document.view&fDocumentId=303946) of this device, the serial barcode scanner is called "a state-of-the-art barcode scanner", hehe.
